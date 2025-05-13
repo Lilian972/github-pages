@@ -1,0 +1,206 @@
+/*
+Directory structure for Confia immersive site (Next.js + Tailwind + Framer Motion)
+
+confia-immersive/
+├── package.json
+├── next.config.js
+├── postcss.config.js
+├── tailwind.config.js
+├── styles/
+│   └── globals.css
+├── pages/
+│   ├── _app.js
+│   └── index.js
+├── components/
+│   └── ConfiaImmersiveHome.js
+└── public/
+    └── images/
+        ├── plomberie.jpg
+        ├── electricite.jpg
+        ├── plombier_a.jpg
+        ├── plombier_b.jpg
+        ├── plombier_c.jpg
+        ├── electricien_a.jpg
+        ├── electricien_b.jpg
+        └── electricien_c.jpg
+*/
+
+// package.json
+{
+  "name": "confia-immersive",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start"
+  },
+  "dependencies": {
+    "framer-motion": "^10.12.16",
+    "next": "12.3.1",
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
+    "tailwindcss": "^3.3.2",
+    "postcss": "^8.4.14",
+    "autoprefixer": "^10.4.7"
+  }
+}
+
+// next.config.js
+/** @type {import('next').NextConfig} */
+module.exports = {
+  reactStrictMode: true,
+};
+
+// postcss.config.js
+module.exports = {
+  plugins: {
+    tailwindcss: {},
+    autoprefixer: {},
+  },
+};
+
+// tailwind.config.js
+/** @type {import('tailwindcss').Config} */
+module.exports = {
+  content: [
+    './pages/**/*.{js,ts,jsx,tsx}',
+    './components/**/*.{js,ts,jsx,tsx}'
+  ],
+  theme: {
+    extend: {},
+  },
+  plugins: [],
+};
+
+// styles/globals.css
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+// pages/_app.js
+import '../styles/globals.css';
+export default function App({ Component, pageProps }) {
+  return <Component {...pageProps} />;
+}
+
+// pages/index.js
+import ConfiaImmersiveHome from '../components/ConfiaImmersiveHome';
+export default function Home() {
+  return <ConfiaImmersiveHome />;
+}
+
+// components/ConfiaImmersiveHome.js
+import { useState, useRef, useEffect } from 'react';
+import { motion } from 'framer-motion';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+
+const categories = [
+  { name: 'Plomberie', image: '/images/plomberie.jpg', providers: [
+    { name: 'Plombier A', description: 'Expert en plomberie depuis 10 ans.', image: '/images/plombier_a.jpg' },
+    { name: 'Plombier B', description: 'Service rapide et efficace.', image: '/images/plombier_b.jpg' },
+    { name: 'Plombier C', description: 'Installation et réparation garantie.', image: '/images/plombier_c.jpg' }
+  ] },
+  { name: 'Électricité', image: '/images/electricite.jpg', providers: [
+    { name: 'Électricien A', description: 'Spécialiste en installation électrique.', image: '/images/electricien_a.jpg' },
+    { name: 'Électricien B', description: 'Réparation et maintenance.', image: '/images/electricien_b.jpg' },
+    { name: 'Électricien C', description: 'Électricité générale et domotique.', image: '/images/electricien_c.jpg' }
+  ] }
+];
+
+export default function ConfiaImmersiveHome() {
+  const [selectedCategory, setSelectedCategory] = useState(null);
+  const [selectedProvider, setSelectedProvider] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const scrollRef = useRef(null);
+
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTo({ left: 0, behavior: 'smooth' });
+    }
+  }, [selectedCategory]);
+
+  const handleSelectCategory = (category) => {
+    setSelectedCategory(category);
+    setSelectedProvider(null);
+  };
+
+  const handleSelectProvider = (provider) => {
+    setSelectedProvider(provider);
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setSuccess(false);
+    await new Promise(res => setTimeout(res, 2000));
+    setLoading(false);
+    setSuccess(true);
+  };
+
+  return (
+    <div className='grid grid-cols-2 gap-6 p-10'>
+      {!selectedCategory && !selectedProvider && (
+        categories.map((category, index) => (
+          <motion.div
+            key={index}
+            whileHover={{ scale: 1.05 }}
+            onClick={() => handleSelectCategory(category)}
+            className='cursor-pointer rounded-2xl shadow-lg overflow-hidden'>
+            <img src={category.image} alt={category.name} className='w-full h-48 object-cover' />
+            <Card>
+              <CardContent className='text-center text-xl font-bold'>{category.name}</CardContent>
+            </Card>
+          </motion.div>
+        ))
+      )}
+
+      {selectedCategory && !selectedProvider && (
+        <motion.div initial={{ opacity: 0, y: 50 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className='col-span-2 mt-10'>
+          <h2 className='text-2xl mb-4'>Bienvenue dans l'allée {selectedCategory.name}</h2>
+          <div ref={scrollRef} className='overflow-x-scroll whitespace-nowrap scrollbar-hide' style={{display:'flex',gap:'20px',perspective:'1000px'}}>
+            {selectedCategory.providers.map((provider, idx) => (
+              <motion.div key={idx} initial={{ rotateY:0 }} whileHover={{ rotateY:-10, scale:1.05 }} onClick={() => handleSelectProvider(provider)} className='bg-white shadow-lg rounded-2xl p-5 min-w-[220px] cursor-pointer' style={{transformStyle:'preserve-3d'}}>
+                <img src={provider.image} alt={provider.name} className='w-full h-32 object-cover rounded-md mb-3' />
+                <h3 className='text-lg font-bold'>{provider.name}</h3>
+              </motion.div>
+            ))}
+          </div>
+          <Button onClick={() => setSelectedCategory(null)} className='mt-10'>Retour à l'accueil</Button>
+        </motion.div>
+      )}
+
+      {selectedProvider && (
+        <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.5 }} className='col-span-2 mt-10'>
+          <h2 className='text-2xl mb-4'>{selectedProvider.name}</h2>
+          <img src={selectedProvider.image} alt={selectedProvider.name} className='w-full h-64 object-cover rounded-md mb-4' />
+          <p className='text-lg mb-4'>{selectedProvider.description}</p>
+          <div className='flex gap-4'>
+            <Button onClick={() => setSelectedProvider(null)} className='mr-4'>Retour à l'allée</Button>
+            <Button onClick={() => setSelectedCategory(null)}>Retour à l'accueil</Button>
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button className='bg-green-500 text-white'>Prendre contact</Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader><DialogTitle>Prendre Contact avec {selectedProvider.name}</DialogTitle></DialogHeader>
+                <form onSubmit={handleSubmit} className='space-y-4'>
+                  <Input placeholder='Votre nom' required />
+                  <Input placeholder='Votre email' type='email' required />
+                  <Textarea placeholder='Votre message...' required />
+                  <Button type='submit' className='bg-green-500 text-white' disabled={loading}>{loading ? 'Envoi en cours...' : 'Envoyer'}</Button>
+                </form>
+                {success && <p className='text-green-500 mt-2'>Message envoyé avec succès !</p>}
+              </DialogContent>
+            </Dialog>
+          </div>
+        </motion.div>
+      )}
+    </div>
+  );
+}
